@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Workshop IAAA. Space Apps 2017</title>
+     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.0.3/dist/leaflet.css"
+   integrity="sha512-07I2e+7D8p6he1SIM+1twR5TIrhUQn9+I6yjqD53JQjFiMf8EtC93ty0/5vJTZGF8aAocvHYNEDJajGdNx1IsQ=="
+   crossorigin=""/>
+   <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+   <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
+   <script src="https://unpkg.com/leaflet@1.0.3/dist/leaflet.js"
+   integrity="sha512-A7vV8IFfih/D732iSSKi20u/ooOfj/AGehOKq0f4vLT1Zr2Y+RX7C+w8A1gaSasGtRUZpF/NZgzSAu4/Gc41Lg=="
+   crossorigin=""></script>
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.4.9/leaflet.draw.css">
+
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/0.4.9/leaflet.draw.js"></script>
+
+   <script src="static/js/main.js"></script>
+   <style>
+        #mapid { height: 580px; }
+   </style>
+</head>
+    <body>
+        <div id = 'mapid'>
+        </div>
+        <div style="height: 400px; margin-top:1px">
+        <p>Date: <input type="text" id="datepicker"></p>
+        </div>
+    </body>
+<script>
+
+    var map = L.map('mapid').setView([43.505, -0.09], 4);
+
+  L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+    attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(map);
+
+
+
+L.tileLayer('https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_CityLights_2012/default/2012-07-09/GoogleMapsCompatible_Level8/{z}/{y}/{x}.jpeg', {
+    crossOrigin: 'Anonymous',
+    attribution: 'NASA',
+}).addTo(map);
+
+$( function() {
+    $( "#datepicker" ).datepicker({
+         dateFormat: "yy-mm-dd",
+         yearRange: '1962:2017',
+         defaultDate: new Date(2016, 01, 01),
+         onSelect: function(dateText) {
+            get_precipitation_data(dateText);
+            get_true_color(dateText);
+  }
+    });
+
+ var drawnItems = new L.FeatureGroup();
+  map.addLayer(drawnItems);
+
+var drawControl = new L.Control.Draw({
+    edit: {
+        featureGroup: drawnItems
+    }
+});
+map.addControl(drawControl);
+
+
+map.on('draw:created', function (e) {
+    var type = e.layerType,
+        layer = e.layer;
+    
+    var x_min = layer._bounds._southWest.lng;
+    var y_min = layer._bounds._southWest.lat;
+    var x_max = layer._bounds._northEast.lng;
+    var y_max = layer._bounds._northEast.lat;
+
+
+    drawnItems.addLayer(layer);
+    get_giovanni_data(x_min, y_min, x_max, y_max);
+    get_water_by_geom(x_min, y_min, x_max, y_max);
+});
+
+  } );
+
+</script>
+</body>
+</html>
